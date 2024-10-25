@@ -60,7 +60,7 @@ const postSchema = new mongoose.Schema({
     content: String,
     file: String,
     likes: { type: Number, default: 0 },
-    comments: [{ text: String }],
+    comments: [{ text: String, isFlagged: { type: Boolean, default: false } }], // Updated schema
     isFlagged: { type: Boolean, default: false }, // New field to indicate flagged content
 });
 
@@ -102,6 +102,10 @@ async function checkContentAppropriateness(content) {
         return response.toLowerCase() === 'inappropriate';
     } catch (error) {
         console.error("Error checking content:", error.message);
+        // Flag as inappropriate if blocked due to safety concerns
+        if (error.message.includes("Candidate was blocked due to SAFETY")) {
+            return true;
+        }
         return false;
     }
 }
@@ -173,6 +177,29 @@ app.post('/api/posts', authenticateToken, upload.single('file'), async (req, res
     }
 });
 
+app.post('/api/posts/comment/:postId', authenticateToken, async (req, res) => {
+    try {
+        const postId = req.params.postId;
+        const { text } = req.body;
+        const post = await Post.findById(postId);
+
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        const isCommentFlagged = await checkContentAppropriateness(text);
+        console.log(`Comment flagged as inappropriate: ${isCommentFlagged}`);
+
+        post.comments.push({ text, isFlagged: isCommentFlagged });
+        await post.save();
+
+        res.json(post);
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 app.post('/api/posts/like/:postId', authenticateToken, async (req, res) => {
     try {
         const postId = req.params.postId;
@@ -188,26 +215,6 @@ app.post('/api/posts/like/:postId', authenticateToken, async (req, res) => {
         res.json(post);
     } catch (error) {
         console.error('Error liking post:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-app.post('/api/posts/comment/:postId', authenticateToken, async (req, res) => {
-    try {
-        const postId = req.params.postId;
-        const { text } = req.body;
-        const post = await Post.findById(postId);
-
-        if (!post) {
-            return res.status(404).json({ error: 'Post not found' });
-        }
-
-        post.comments.push({ text });
-        await post.save();
-
-        res.json(post);
-    } catch (error) {
-        console.error('Error adding comment:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });

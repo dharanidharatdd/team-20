@@ -56,7 +56,7 @@ function Home({ token }) {
     return (
         <div className="home">
             <h2>Recent Posts</h2>
-            {posts.map((post) => (
+            {posts.slice().reverse().map((post) => (
                 <div key={post._id} className="post">
                     <h3 style={{ color: post.isFlagged ? 'red' : 'inherit' }}>
                         {post.isFlagged ? "This title is hidden due to inappropriate content." : post.title}
@@ -87,7 +87,9 @@ function Home({ token }) {
                     <p>Comments: {post.comments.length}</p>
                     <ul>
                         {post.comments.map((comment, index) => (
-                            <li key={index}>{comment.text}</li>
+                            <li key={index} style={{ color: comment.isFlagged ? 'red' : 'inherit' }}>
+                                {comment.isFlagged ? "This comment is hidden due to inappropriate content." : comment.text}
+                            </li>
                         ))}
                     </ul>
 
