@@ -8,6 +8,7 @@ const fs = require('fs');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -60,6 +61,7 @@ const postSchema = new mongoose.Schema({
     file: String,
     likes: { type: Number, default: 0 },
     comments: [{ text: String }],
+    isFlagged: { type: Boolean, default: false }, // New field to indicate flagged content
 });
 
 const Post = mongoose.model('Post', postSchema);
@@ -77,6 +79,32 @@ const authenticateToken = (req, res, next) => {
         next();
     });
 };
+
+// Function to check content appropriateness
+async function checkContentAppropriateness(content) {
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+        console.error("API key is missing. Please set it in the .env file.");
+        return false;
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    try {
+        const prompt = `You only read userdata and return "appropriate" or "inappropriate". Single words like "hi", "click", "mother", "father" and most other single words should be considered appropriate. For: ${content}`;
+        console.log(`Checking content appropriateness for: ${content}`);
+        const result = await model.generateContent(prompt);
+        const response = result.response.text().trim();
+        console.log(`API response: ${response}`);
+
+        // Return true if the content is inappropriate
+        return response.toLowerCase() === 'inappropriate';
+    } catch (error) {
+        console.error("Error checking content:", error.message);
+        return false;
+    }
+}
 
 app.post('/api/register', async (req, res) => {
     try {
@@ -130,7 +158,13 @@ app.post('/api/posts', authenticateToken, upload.single('file'), async (req, res
             return res.status(400).json({ error: 'Title and content are required fields' });
         }
 
-        const post = new Post({ title, content, file });
+        const isTitleFlagged = await checkContentAppropriateness(title);
+        const isContentFlagged = await checkContentAppropriateness(content);
+        const isFlagged = isTitleFlagged || isContentFlagged;
+        console.log(`Title flagged as inappropriate: ${isTitleFlagged}`);
+        console.log(`Content flagged as inappropriate: ${isContentFlagged}`);
+
+        const post = new Post({ title, content, file, isFlagged });
         await post.save();
         res.status(201).json(post);
     } catch (error) {

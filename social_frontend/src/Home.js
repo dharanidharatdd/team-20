@@ -58,8 +58,12 @@ function Home({ token }) {
             <h2>Recent Posts</h2>
             {posts.map((post) => (
                 <div key={post._id} className="post">
-                    <h3>{post.title}</h3>
-                    <p>{post.content}</p>
+                    <h3 style={{ color: post.isFlagged ? 'red' : 'inherit' }}>
+                        {post.isFlagged ? "This title is hidden due to inappropriate content." : post.title}
+                    </h3>
+                    <p style={{ color: post.isFlagged ? 'red' : 'inherit' }}>
+                        {post.isFlagged ? "This content is hidden due to inappropriate content." : post.content}
+                    </p>
                     {post.file && (
                         <div>
                             {post.file.includes(".mp4") ? (
