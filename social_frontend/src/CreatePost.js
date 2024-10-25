@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState } from 'react';
+import axios from 'axios';
 
 function CreatePost() {
     const [newPost, setNewPost] = useState({
@@ -7,6 +7,7 @@ function CreatePost() {
         content: "",
         file: null,
     });
+    const token = localStorage.getItem('token');
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
@@ -23,12 +24,17 @@ function CreatePost() {
         formData.append("content", newPost.content);
         formData.append("file", newPost.file);
 
-        axios
-            .post("http://localhost:5000/api/posts", formData)
-            .then((response) => {
-                setNewPost({ title: "", content: "", file: null });
-            })
-            .catch((error) => console.error("Error creating post:", error));
+        axios.post('http://localhost:5000/api/posts', formData, {
+            headers: {
+                'Authorization': token
+            }
+        })
+        .then(response => {
+            setNewPost({ title: "", content: "", file: null });
+        })
+        .catch(error => {
+            console.error('Error creating post:', error);
+        });
     };
 
     return (

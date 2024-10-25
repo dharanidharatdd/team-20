@@ -5,9 +5,13 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const SECRET_KEY = process.env.SECRET_KEY;
 
 app.use(cors());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -30,7 +34,25 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Update the MongoDB connection string to use the local MongoDB instance
-mongoose.connect('mongodb://localhost:27017/yourDatabaseName');
+mongoose.connect(process.env.MONGODB_URI);
+
+const userSchema = new mongoose.Schema({
+    username: { type: String, unique: true },
+    password: String,
+});
+
+userSchema.pre('save', async function (next) {
+    if (this.isModified('password') || this.isNew) {
+        this.password = await bcrypt.hash(this.password, 10);
+    }
+    next();
+});
+
+userSchema.methods.comparePassword = function (password) {
+    return bcrypt.compare(password, this.password);
+};
+
+const User = mongoose.model('User', userSchema);
 
 const postSchema = new mongoose.Schema({
     title: String,
@@ -44,7 +66,50 @@ const Post = mongoose.model('Post', postSchema);
 
 app.use(bodyParser.json());
 
-app.get('/api/posts', async (req, res) => {
+// Middleware to verify JWT token
+const authenticateToken = (req, res, next) => {
+    const token = req.headers['authorization'];
+    if (!token) return res.status(401).json({ error: 'Access denied' });
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) return res.status(403).json({ error: 'Invalid token' });
+        req.user = user;
+        next();
+    });
+};
+
+app.post('/api/register', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = new User({ username, password });
+        await user.save();
+        res.status(201).json({ message: 'User registered successfully' });
+    } catch (error) {
+        console.error('Error registering user:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.post('/api/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+        const isPasswordValid = await user.comparePassword(password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+        const token = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: '1h' });
+        res.json({ token });
+    } catch (error) {
+        console.error('Error logging in:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.get('/api/posts', authenticateToken, async (req, res) => {
     try {
         const posts = await Post.find();
         res.json(posts);
@@ -53,7 +118,7 @@ app.get('/api/posts', async (req, res) => {
     }
 });
 
-app.post('/api/posts', upload.single('file'), async (req, res) => {
+app.post('/api/posts', authenticateToken, upload.single('file'), async (req, res) => {
     try {
         const { title, content } = req.body;
         const file = req.file ? req.file.filename : undefined;
@@ -74,7 +139,7 @@ app.post('/api/posts', upload.single('file'), async (req, res) => {
     }
 });
 
-app.post('/api/posts/like/:postId', async (req, res) => {
+app.post('/api/posts/like/:postId', authenticateToken, async (req, res) => {
     try {
         const postId = req.params.postId;
         const post = await Post.findById(postId);
@@ -93,7 +158,7 @@ app.post('/api/posts/like/:postId', async (req, res) => {
     }
 });
 
-app.post('/api/posts/comment/:postId', async (req, res) => {
+app.post('/api/posts/comment/:postId', authenticateToken, async (req, res) => {
     try {
         const postId = req.params.postId;
         const { text } = req.body;
