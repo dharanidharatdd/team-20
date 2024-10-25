@@ -3,14 +3,18 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 function SignUp() {
+    // State variables for username and password
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
+    // Handle form submission
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
+            // Send POST request to register the user
             await axios.post('http://localhost:5000/api/register', { username, password });
+            // Navigate to login page on successful registration
             navigate('/login');
         } catch (error) {
             console.error('Error signing up:', error);

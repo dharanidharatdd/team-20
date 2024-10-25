@@ -14,6 +14,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const SECRET_KEY = process.env.SECRET_KEY;
 
+// Middleware setup
 app.use(cors());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -23,6 +24,7 @@ if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
 }
 
+// Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/');
@@ -34,14 +36,16 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Update the MongoDB connection string to use the local MongoDB instance
+// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI);
 
+// Define User schema and model
 const userSchema = new mongoose.Schema({
     username: { type: String, unique: true },
     password: String,
 });
 
+// Hash password before saving user
 userSchema.pre('save', async function (next) {
     if (this.isModified('password') || this.isNew) {
         this.password = await bcrypt.hash(this.password, 10);
@@ -49,12 +53,14 @@ userSchema.pre('save', async function (next) {
     next();
 });
 
+// Method to compare passwords
 userSchema.methods.comparePassword = function (password) {
     return bcrypt.compare(password, this.password);
 };
 
 const User = mongoose.model('User', userSchema);
 
+// Define Post schema and model
 const postSchema = new mongoose.Schema({
     title: String,
     content: String,
@@ -110,6 +116,7 @@ async function checkContentAppropriateness(content) {
     }
 }
 
+// Register a new user
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -122,6 +129,7 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
+// Login a user
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -141,6 +149,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// Get all posts
 app.get('/api/posts', authenticateToken, async (req, res) => {
     try {
         const posts = await Post.find();
@@ -150,6 +159,7 @@ app.get('/api/posts', authenticateToken, async (req, res) => {
     }
 });
 
+// Create a new post
 app.post('/api/posts', authenticateToken, upload.single('file'), async (req, res) => {
     try {
         const { title, content } = req.body;
@@ -177,6 +187,7 @@ app.post('/api/posts', authenticateToken, upload.single('file'), async (req, res
     }
 });
 
+// Add a comment to a post
 app.post('/api/posts/comment/:postId', authenticateToken, async (req, res) => {
     try {
         const postId = req.params.postId;
@@ -200,6 +211,7 @@ app.post('/api/posts/comment/:postId', authenticateToken, async (req, res) => {
     }
 });
 
+// Like a post
 app.post('/api/posts/like/:postId', authenticateToken, async (req, res) => {
     try {
         const postId = req.params.postId;
@@ -219,6 +231,7 @@ app.post('/api/posts/like/:postId', authenticateToken, async (req, res) => {
     }
 });
 
+// Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 }).on('error', (err) => {

@@ -2,18 +2,24 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+// Login component
 function Login({ setToken }) {
+    // State for username and password
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
+    // Handle form submission
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
+            // Send login request to the server
             const response = await axios.post('http://localhost:5000/api/login', { username, password });
+            // Set token and navigate to home page
             setToken(response.data.token);
             navigate('/');
         } catch (error) {
+            // Log any errors
             console.error('Error logging in:', error);
         }
     };
