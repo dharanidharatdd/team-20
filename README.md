@@ -13,7 +13,7 @@ Welcome to the **AI-Powered Content Moderation System**! 🎉 This project aims 
 - **Frontend**: React
 - **Backend**: Node.js, Express
 - **Database**: MongoDB
-- **AI/ML**: TensorFlow, Python
+- **AI/ML**: Gemini, LLM
 - **Hosting**: Heroku
 
 ## 📸 Screenshots
