@@ -171,7 +171,8 @@ app.post('/api/posts', authenticateToken, upload.single('file'), async (req, res
     try {
         const { title, content } = req.body;
         const file = req.file ? req.file.filename : null;
-        const post = new Post({ title, content, file, username: req.user.username });
+        const isFlagged = await checkContentAppropriateness(title) || await checkContentAppropriateness(content);
+        const post = new Post({ title, content, file, username: req.user.username, isFlagged });
         await post.save();
         res.status(201).json(post);
     } catch (error) {
@@ -187,7 +188,8 @@ app.post('/api/posts/comment/:postId', authenticateToken, async (req, res) => {
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
         }
-        post.comments.push({ text, username: req.user.username });
+        const isFlagged = await checkContentAppropriateness(text);
+        post.comments.push({ text, username: req.user.username, isFlagged });
         await post.save();
         res.json(post);
     } catch (error) {
