@@ -98,6 +98,7 @@ function Home({ token }) {
                         {post.comments.map((comment, index) => (
                             <li key={index} style={{ color: comment.isFlagged ? 'red' : 'inherit' }}>
                                 {comment.isFlagged ? "This comment is hidden due to inappropriate content." : comment.text}
+                                <span style={{ color: 'lightgray' }}> - {comment.username}</span>
                             </li>
                         ))}
                     </ul>

@@ -72,8 +72,9 @@ const postSchema = new mongoose.Schema({
     content: String,
     file: String,
     likes: { type: Number, default: 0 },
-    comments: [{ text: String, isFlagged: { type: Boolean, default: false } }],
+    comments: [{ text: String, isFlagged: { type: Boolean, default: false }, username: String }],
     isFlagged: { type: Boolean, default: false },
+    username: String, // Add username field
 });
 
 const Post = mongoose.model('Post', postSchema);
@@ -209,7 +210,7 @@ app.post('/api/posts/comment/:postId', authenticateToken, async (req, res) => {
         const isCommentFlagged = await checkContentAppropriateness(text);
         console.log(`Comment flagged as inappropriate: ${isCommentFlagged}`);
 
-        post.comments.push({ text, isFlagged: isCommentFlagged });
+        post.comments.push({ text, isFlagged: isCommentFlagged, username: req.user.username });
         await post.save();
 
         res.json(post);
