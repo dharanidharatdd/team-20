@@ -3,7 +3,7 @@ Welcome to the **AI-Powered Content Moderation System**! 🎉 This project aims 
 
 ## 🚀 Features
 
-- **Automated Content Moderation**: Detects and flags inappropriate or harmful text content.
+- **Automated Content Moderation**: Detects and flags inappropriate or harmful text content. (⚠️Working on image/video)
 - **Continuous Learning**: The AI model improves its accuracy over time.
 - **User and Content Management**: MongoDB is used to manage user and content data.
 - **User Interface**: Built with React for a seamless user experience.
@@ -14,7 +14,7 @@ Welcome to the **AI-Powered Content Moderation System**! 🎉 This project aims 
 - **Backend**: Node.js, Express
 - **Database**: MongoDB
 - **AI/ML**: Gemini, LLM
-- **Hosting**: Heroku
+- **Hosting**: Render
 
 ## 📸 Screenshots
 
