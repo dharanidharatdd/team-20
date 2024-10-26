@@ -72,6 +72,7 @@ function Home({ token }) {
                     <p style={{ color: post.isFlagged ? 'red' : 'inherit' }}>
                         {post.isFlagged ? "This content is hidden due to inappropriate content." : post.content}
                     </p>
+                    <p>Posted by: {post.username}</p>
                     {post.file && (
                         <div>
                             {post.file.includes(".mp4") ? (

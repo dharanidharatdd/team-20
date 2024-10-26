@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function Login({ setToken }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate();
 
     const onSubmit = async (e) => {
         e.preventDefault();
@@ -16,6 +18,7 @@ function Login({ setToken }) {
             console.log('User logged in successfully:', response.data);
             setToken(response.data.token);
             localStorage.setItem('token', response.data.token);
+            navigate('/'); // Redirect to homepage
         } catch (error) {
             console.error('Error logging in:', error);
         }

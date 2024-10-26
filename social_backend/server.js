@@ -168,6 +168,7 @@ app.get('/api/posts', authenticateToken, async (req, res) => {
 });
 
 // Create a new post
+// Create a new post
 app.post('/api/posts', authenticateToken, upload.single('file'), async (req, res) => {
     try {
         const { title, content } = req.body;
@@ -185,7 +186,7 @@ app.post('/api/posts', authenticateToken, upload.single('file'), async (req, res
         console.log(`Title flagged as inappropriate: ${isTitleFlagged}`);
         console.log(`Content flagged as inappropriate: ${isContentFlagged}`);
 
-        const post = new Post({ title, content, file, isFlagged });
+        const post = new Post({ title, content, file, isFlagged, username: req.user.username });
         await post.save();
         res.status(201).json(post);
     } catch (error) {
