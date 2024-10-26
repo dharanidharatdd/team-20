@@ -34,8 +34,8 @@ conn.on('error', (err) => {
     console.error('MongoDB connection error:', err);
 });
 
-let gfs;
 conn.once('open', () => {
+    console.log('MongoDB connection established successfully');
     gfs = Grid(conn.db, mongoose.mongo);
     gfs.collection('uploads');
 });
@@ -133,7 +133,7 @@ async function checkContentAppropriateness(content) {
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
-        console.log(`Registering user: ${username}`);
+        console.log(`ing user: ${username}`);
         const user = new User({ username, password });
         await user.save();
         res.status(201).json({ message: 'User registered successfully' });
