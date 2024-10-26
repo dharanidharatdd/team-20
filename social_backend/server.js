@@ -23,6 +23,11 @@ app.use(bodyParser.json());
 const conn = mongoose.createConnection(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
+});
+
+conn.on('error', (err) => {
+    console.error('MongoDB connection error:', err);
 });
 
 let gfs;
