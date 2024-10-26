@@ -133,7 +133,7 @@ async function checkContentAppropriateness(content) {
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
-        console.log(`ing user: ${username}`);
+        console.log(`Registering user: ${username}`);
         const user = new User({ username, password });
         await user.save();
         res.status(201).json({ message: 'User registered successfully' });
