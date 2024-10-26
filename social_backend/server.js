@@ -16,23 +16,20 @@ const PORT = process.env.PORT || 5000;
 const SECRET_KEY = process.env.SECRET_KEY;
 
 // Middleware setup
-app.use(cors({
-    origin: 'https://team-20-fe.onrender.com', // Replace with your frontend URL
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, // Allow cookies to be sent
-}));
+app.use(cors());
 app.use(bodyParser.json());
 
 // Connect to MongoDB Atlas
-const conn = mongoose.createConnection(process.env.MONGODB_URI, {
-    serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
-});
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => console.log('Connected to MongoDB Atlas'))
+.catch((error) => console.error('Error connecting to MongoDB Atlas:', error));
 
-conn.on('error', (err) => {
-    console.error('MongoDB connection error:', err);
-});
-
+const conn = mongoose.connection;
 let gfs;
+
 conn.once('open', () => {
     console.log('MongoDB connection established successfully');
     gfs = Grid(conn.db, mongoose.mongo);
