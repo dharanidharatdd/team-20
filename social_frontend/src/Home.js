@@ -78,14 +78,14 @@ function Home({ token }) {
                             {post.file.includes(".mp4") ? (
                                 <video width="320" height="240" controls>
                                     <source
-                                        src={`${process.env.REACT_APP_API_URL}/uploads/${post.file}`}
+                                        src={`${process.env.REACT_APP_API_URL}/api/files/${post.file}`}
                                         type="video/mp4"
                                     />
                                     Your browser does not support the video tag.
                                 </video>
                             ) : (
                                 <img
-                                    src={`${process.env.REACT_APP_API_URL}/uploads/${post.file}`}
+                                    src={`${process.env.REACT_APP_API_URL}/api/files/${post.file}`}
                                     alt="Post Media"
                                 />
                             )}

@@ -4,9 +4,10 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const Grid = require('gridfs-stream');
+const { GridFsStorage } = require('multer-gridfs-storage');
 require('dotenv').config();
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
@@ -17,33 +18,31 @@ const SECRET_KEY = process.env.SECRET_KEY;
 // Middleware setup
 app.use(cors());
 app.use(bodyParser.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Ensure the uploads directory exists
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
-}
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/');
-    },
-    filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-    }
-});
-
-const upload = multer({ storage: storage });
 
 // Connect to MongoDB Atlas
-mongoose.connect(process.env.MONGODB_URI, {
+const conn = mongoose.createConnection(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-})
-.then(() => console.log('Connected to MongoDB Atlas'))
-.catch((error) => console.error('Error connecting to MongoDB Atlas:', error));
+});
+
+let gfs;
+conn.once('open', () => {
+    gfs = Grid(conn.db, mongoose.mongo);
+    gfs.collection('uploads');
+});
+
+// Create storage engine
+const storage = new GridFsStorage({
+    url: process.env.MONGODB_URI,
+    file: (req, file) => {
+        return {
+            bucketName: 'uploads',
+            filename: file.fieldname + '-' + Date.now() + path.extname(file.originalname),
+        };
+    },
+});
+
+const upload = multer({ storage });
 
 // Define User schema and model
 const userSchema = new mongoose.Schema({
@@ -74,7 +73,7 @@ const postSchema = new mongoose.Schema({
     likes: { type: Number, default: 0 },
     comments: [{ text: String, isFlagged: { type: Boolean, default: false }, username: String }],
     isFlagged: { type: Boolean, default: false },
-    username: String, // Add username field
+    username: String,
 });
 
 const Post = mongoose.model('Post', postSchema);
@@ -237,6 +236,22 @@ app.post('/api/posts/like/:postId', authenticateToken, async (req, res) => {
         res.json(post);
     } catch (error) {
         console.error('Error liking post:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Get file by filename
+app.get('/api/files/:filename', async (req, res) => {
+    try {
+        const file = await gfs.files.findOne({ filename: req.params.filename });
+        if (!file) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+
+        const readStream = gfs.createReadStream(file.filename);
+        readStream.pipe(res);
+    } catch (error) {
+        console.error('Error fetching file:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
