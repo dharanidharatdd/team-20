@@ -265,6 +265,18 @@ app.get('/api/files/:filename', async (req, res) => {
     }
 });
 
+// Test route to verify MongoDB operations
+app.get('/api/test', async (req, res) => {
+    try {
+        const testUser = new User({ username: 'testuser', password: 'testpassword' });
+        await testUser.save();
+        res.status(200).json({ message: 'Test user created successfully' });
+    } catch (error) {
+        console.error('Error creating test user:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
