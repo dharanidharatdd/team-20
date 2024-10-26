@@ -25,8 +25,6 @@ app.use(bodyParser.json());
 
 // Connect to MongoDB Atlas
 const conn = mongoose.createConnection(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
     serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
 });
 
