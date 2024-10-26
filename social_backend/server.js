@@ -147,7 +147,7 @@ app.post('/api/login', async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
-        const token = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user._id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
         res.json({ token });
     } catch (error) {
         console.error('Error logging in:', error);
@@ -167,7 +167,6 @@ app.get('/api/posts', authenticateToken, async (req, res) => {
     }
 });
 
-// Create a new post
 // Create a new post
 app.post('/api/posts', authenticateToken, upload.single('file'), async (req, res) => {
     try {
