@@ -111,7 +111,7 @@ async function checkContentAppropriateness(content) {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     try {
-        const prompt = `You only read userdata and return "appropriate" or "inappropriate". Single words like "hi", "click", "mother", "father" and most other single words should be considered appropriate. For: ${content}`;
+        const prompt = `You only read userdata and return "appropriate" or "inappropriate". Single words like "hi", "click", "mother", "father" and most other single words should be considered appropriate, You can consider hate speach as inappropriate as well. For: ${content}`;
         console.log(`Checking content appropriateness for: ${content}`);
         const result = await model.generateContent(prompt);
         const response = result.response.text().trim();
