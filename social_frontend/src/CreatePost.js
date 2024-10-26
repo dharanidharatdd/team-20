@@ -9,6 +9,7 @@ function CreatePost() {
     });
 
     const token = localStorage.getItem('token');
+    const apiUrl = process.env.REACT_APP_API_URL;
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
@@ -27,7 +28,7 @@ function CreatePost() {
 
         console.log('Creating a new post:', { title: newPost.title, content: newPost.content, file: newPost.file });
 
-        axios.post(`${process.env.REACT_APP_API_URL}/api/posts`, formData, {
+        axios.post(`${apiUrl}/api/posts`, formData, {
             headers: {
                 'Authorization': token
             }
