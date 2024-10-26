@@ -34,6 +34,7 @@ conn.on('error', (err) => {
     console.error('MongoDB connection error:', err);
 });
 
+let gfs;
 conn.once('open', () => {
     console.log('MongoDB connection established successfully');
     gfs = Grid(conn.db, mongoose.mongo);
