@@ -1,21 +1,18 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
 function SignUp() {
-    // State variables for username and password
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const navigate = useNavigate();
 
-    // Handle form submission
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const onSubmit = async (e) => {
+        e.preventDefault();
         try {
-            // Send POST request to register the user
-            await axios.post('http://localhost:5000/api/register', { username, password });
-            // Navigate to login page on successful registration
-            navigate('/login');
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/register`, {
+                username,
+                password
+            });
+            console.log('User registered successfully:', response.data);
         } catch (error) {
             console.error('Error signing up:', error);
         }
@@ -24,17 +21,15 @@ function SignUp() {
     return (
         <div className="signup">
             <h2>Sign Up</h2>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={onSubmit}>
                 <input
                     type="text"
-                    name="username"
                     placeholder="Username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                 />
                 <input
                     type="password"
-                    name="password"
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
