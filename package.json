@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "install-server": "cd social_backend && npm install",
+    "install-server": "cd social_backend && npm install --legacy-peer-deps",
     "start-server": "cd social_backend && node server.js",
     "install-client": "cd social_frontend && npm install",
     "build-client": "cd social_frontend && npm run build",
