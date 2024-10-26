@@ -16,7 +16,11 @@ const PORT = process.env.PORT || 5000;
 const SECRET_KEY = process.env.SECRET_KEY;
 
 // Middleware setup
-app.use(cors());
+app.use(cors({
+    origin: 'https://team-20-fe.onrender.com', // Replace with your frontend URL
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Allow cookies to be sent
+}));
 app.use(bodyParser.json());
 
 // Connect to MongoDB Atlas
