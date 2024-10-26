@@ -8,6 +8,7 @@ function SignUp() {
     const onSubmit = async (e) => {
         e.preventDefault();
         try {
+            console.log('Signing up user:', { username, password });
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/register`, {
                 username,
                 password

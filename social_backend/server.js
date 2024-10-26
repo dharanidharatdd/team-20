@@ -16,6 +16,7 @@ const SECRET_KEY = process.env.SECRET_KEY;
 
 // Middleware setup
 app.use(cors());
+app.use(bodyParser.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Ensure the uploads directory exists
@@ -71,13 +72,11 @@ const postSchema = new mongoose.Schema({
     content: String,
     file: String,
     likes: { type: Number, default: 0 },
-    comments: [{ text: String, isFlagged: { type: Boolean, default: false } }], // Updated schema
-    isFlagged: { type: Boolean, default: false }, // New field to indicate flagged content
+    comments: [{ text: String, isFlagged: { type: Boolean, default: false } }],
+    isFlagged: { type: Boolean, default: false },
 });
 
 const Post = mongoose.model('Post', postSchema);
-
-app.use(bodyParser.json());
 
 // Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
@@ -125,6 +124,7 @@ async function checkContentAppropriateness(content) {
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
+        console.log(`Registering user: ${username}`);
         const user = new User({ username, password });
         await user.save();
         res.status(201).json({ message: 'User registered successfully' });
@@ -138,6 +138,7 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
+        console.log(`Logging in user: ${username}`);
         const user = await User.findOne({ username });
         if (!user) {
             return res.status(401).json({ error: 'Invalid username or password' });
@@ -157,9 +158,11 @@ app.post('/api/login', async (req, res) => {
 // Get all posts
 app.get('/api/posts', authenticateToken, async (req, res) => {
     try {
+        console.log('Fetching all posts');
         const posts = await Post.find();
         res.json(posts);
     } catch (error) {
+        console.error('Error fetching posts:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
@@ -170,8 +173,7 @@ app.post('/api/posts', authenticateToken, upload.single('file'), async (req, res
         const { title, content } = req.body;
         const file = req.file ? req.file.filename : undefined;
 
-        console.log('Request Body:', req.body);
-        console.log('Uploaded File:', req.file);
+        console.log('Creating a new post:', { title, content, file });
 
         if (!title || !content) {
             return res.status(400).json({ error: 'Title and content are required fields' });
@@ -197,6 +199,7 @@ app.post('/api/posts/comment/:postId', authenticateToken, async (req, res) => {
     try {
         const postId = req.params.postId;
         const { text } = req.body;
+        console.log(`Adding comment to post ${postId}: ${text}`);
         const post = await Post.findById(postId);
 
         if (!post) {
@@ -220,6 +223,7 @@ app.post('/api/posts/comment/:postId', authenticateToken, async (req, res) => {
 app.post('/api/posts/like/:postId', authenticateToken, async (req, res) => {
     try {
         const postId = req.params.postId;
+        console.log(`Liking post ${postId}`);
         const post = await Post.findById(postId);
 
         if (!post) {

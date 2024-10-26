@@ -8,10 +8,12 @@ function Login({ setToken }) {
     const onSubmit = async (e) => {
         e.preventDefault();
         try {
+            console.log('Logging in user:', { username, password });
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/login`, {
                 username,
                 password
             });
+            console.log('User logged in successfully:', response.data);
             setToken(response.data.token);
             localStorage.setItem('token', response.data.token);
         } catch (error) {

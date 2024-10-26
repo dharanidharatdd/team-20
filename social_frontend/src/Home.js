@@ -7,18 +7,23 @@ function Home({ token }) {
 
     useEffect(() => {
         if (token) {
+            console.log('Fetching posts with token:', token);
             axios
                 .get(`${process.env.REACT_APP_API_URL}/api/posts`, {
                     headers: {
                         'Authorization': token
                     }
                 })
-                .then((response) => setPosts(response.data))
+                .then((response) => {
+                    console.log('Posts fetched successfully:', response.data);
+                    setPosts(response.data);
+                })
                 .catch((error) => console.error("Error fetching posts:", error));
         }
     }, [token]);
 
     const handleLike = (postId) => {
+        console.log('Liking post:', postId);
         axios
             .post(`${process.env.REACT_APP_API_URL}/api/posts/like/${postId}`, {}, {
                 headers: {
@@ -26,6 +31,7 @@ function Home({ token }) {
                 }
             })
             .then((response) => {
+                console.log('Post liked successfully:', response.data);
                 const updatedPosts = posts.map((post) =>
                     post._id === postId ? response.data : post
                 );
@@ -35,6 +41,7 @@ function Home({ token }) {
     };
 
     const handleAddComment = (postId, commentText) => {
+        console.log('Adding comment to post:', postId, 'Comment:', commentText);
         axios
             .post(`${process.env.REACT_APP_API_URL}/api/posts/comment/${postId}`, {
                 text: commentText,
@@ -44,6 +51,7 @@ function Home({ token }) {
                 }
             })
             .then((response) => {
+                console.log('Comment added successfully:', response.data);
                 const updatedPosts = posts.map((post) =>
                     post._id === postId ? response.data : post
                 );

@@ -25,12 +25,15 @@ function CreatePost() {
         formData.append("content", newPost.content);
         formData.append("file", newPost.file);
 
+        console.log('Creating a new post:', { title: newPost.title, content: newPost.content, file: newPost.file });
+
         axios.post(`${process.env.REACT_APP_API_URL}/api/posts`, formData, {
             headers: {
                 'Authorization': token
             }
         })
         .then(response => {
+            console.log('Post created successfully:', response.data);
             setNewPost({ title: "", content: "", file: null });
         })
         .catch(error => {
